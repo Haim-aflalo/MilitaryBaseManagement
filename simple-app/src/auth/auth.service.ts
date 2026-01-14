@@ -12,8 +12,11 @@ export class AuthService {
   async login(authDto: AuthDto) {
     const user = await this.usersService.findByMail(authDto.email);
 
-    if (user && (await bcrypt.compare(authDto.password, user.password))) {
-      const payload = { role: user.role, sub: user.id };
+    if (
+      user &&
+      (await bcrypt.compare(authDto.password, user.dataValues.password))
+    ) {
+      const payload = { role: user.dataValues.role, sub: user.dataValues.id };
       return {
         access_token: await this.jwtService.signAsync(payload),
       };
