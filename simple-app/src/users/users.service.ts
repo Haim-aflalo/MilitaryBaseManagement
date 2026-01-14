@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
+import { UserDto } from './dto/user.dto';
+import { User } from './entities/user.entity';
 import { InjectModel } from '@nestjs/sequelize';
-import { User } from './users.model';
 import * as bcrypt from 'bcrypt';
+
 
 @Injectable()
 export class UsersService {
@@ -10,48 +12,31 @@ export class UsersService {
     private readonly userModel: typeof User,
   ) {}
 
-  async createUser(data: any): Promise<User | null> {
-    const hash = await bcrypt.hash(data.password, 10);
-    // data.password = hash;
-    return await this.userModel.create({
-      name: data.name,
-      password: hash,
-      email: data.email,
-      role: data.role,
-    });
+  async createUser(createUserDto: UserDto): Promise<User | null> {
+    createUserDto.password = await bcrypt.hash(createUserDto.password, 10);
+    return await this.userModel.create(createUserDto as any);
   }
 
-  async findOne(id: number) {
+  async findAll(): Promise<User[] | null> {
+    return await this.userModel.findAll();
+  }
+
+  async findByMail(email: string): Promise<User | null> {
     return await this.userModel.findOne({
       where: {
-        id,
+        email,
       },
     });
   }
 
-  async findAll(): Promise<User[]> {
-    const users = await this.userModel.findAll();
-    console.log(users);
-    return users;
+  async update(id: number, updateUserDto: UserDto): Promise<User | undefined> {
+    updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
+    const user = await this.userModel.findByPk(id);
+    return await user?.update(updateUserDto);
   }
 
-  async findByName(name: string) {
-    const user = await this.userModel.findOne({ where: { name } });
-    return user?.dataValues;
-  }
-
-  async update(user: any) {
-    const userToUpdate = await this.findOne(user.id);
-    await this.userModel.update(
-      { ...user, ...userToUpdate },
-      { where: { id: user.id } },
-    );
-  }
-
-  async remove(id: number) {
-    const user = await this.findOne(id);
-    if (user) {
-      return await user.destroy();
-    }
+  async remove(id: number): Promise<void> {
+    const user = await this.userModel.findByPk(id);
+    return await user?.destroy();
   }
 }

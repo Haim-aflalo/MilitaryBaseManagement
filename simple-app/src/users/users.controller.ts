@@ -1,63 +1,48 @@
 import {
-  Body,
   Controller,
-  Delete,
   Get,
-  Param,
   Post,
-  Put,
+  Body,
+  Patch,
+  Param,
+  Delete,
   UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { UserRole } from './users.model';
-import { soldierGuard } from 'src/auth/auth.soldier.guard';
-import { CommanderGuard } from 'src/auth/auth.commander.guard';
+import { UserDto } from './dto/user.dto';
+import { AuthGuard } from 'src/auth/auth.soldierGuard';
+import { commanderGuard } from 'src/auth/auth.commanderGuard';
 
 @Controller('users')
 export class UsersController {
-  constructor(private usersService: UsersService) {}
-  @Get()
-  getHello(): string {
-    return 'Hello';
-  }
+  constructor(private readonly usersService: UsersService) {}
+
   @Post('create')
-  create(
-    @Body()
-    user,
-  ) {
-    return this.usersService.createUser(user);
+  create(@Body() createUserDto: UserDto) {
+    return this.usersService.createUser(createUserDto);
   }
+
   @Get('getAll')
-  @UseGuards(soldierGuard)
-  getAll() {
+  @UseGuards(AuthGuard)
+  findAll() {
     return this.usersService.findAll();
   }
-  @Get('getById:id')
-  @UseGuards(soldierGuard)
-  getOne(@Param() id: number) {
-    return this.usersService.findOne(id);
+
+  @Get('findByEmail:email')
+  @UseGuards(AuthGuard)
+  findOne(@Param('email') email: string) {
+    return this.usersService.findByMail(email);
   }
-  @Get('getById:name')
-  @UseGuards(soldierGuard)
-  getByName(@Param() name: string) {
-    return this.usersService.findByName(name);
+
+  @Patch('update:id')
+  @UseGuards(commanderGuard)
+  update(@Param('id') id: number, @Body() updateUserDto: UserDto) {
+    return this.usersService.update(id, updateUserDto);
   }
-  @Put('update')
-  @UseGuards(CommanderGuard)
-  updateUser(
-    @Body()
-    user: {
-      name: string;
-      password: string;
-      email: string;
-      role: UserRole;
-    },
-  ) {
-    return this.usersService.update(user);
-  }
+
   @Delete('delete:id')
-  @UseGuards(CommanderGuard)
-  deleteUser(@Param() id: number) {
+  @UseGuards(commanderGuard)
+  remove(@Param('id') id: number) {
     return this.usersService.remove(id);
   }
 }

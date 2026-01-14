@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { ShiftsController } from './shifts.controller';
 import { ShiftsService } from './shifts.service';
+import { ShiftsController } from './shifts.controller';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { Shifts } from './shifts.model';
+import { Shifts } from './entities/shift.entity';
 
 @Module({
   imports: [SequelizeModule.forFeature([Shifts])],

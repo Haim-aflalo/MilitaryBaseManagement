@@ -1,54 +1,49 @@
 import {
-  Body,
   Controller,
-  Delete,
   Get,
-  Param,
   Post,
-  Put,
+  Body,
+  Patch,
+  Param,
+  Delete,
   UseGuards,
 } from '@nestjs/common';
 import { AssignmentsService } from './assignments.service';
-import { CommanderGuard } from 'src/auth/auth.commander.guard';
-import { soldierGuard } from 'src/auth/auth.soldier.guard';
+import { AssignmentDto } from './dto/assignment.dto';
+import { AuthGuard } from 'src/auth/auth.soldierGuard';
+import { commanderGuard } from 'src/auth/auth.commanderGuard';
 
 @Controller('assignments')
 export class AssignmentsController {
-  constructor(private assignService: AssignmentsService) {}
-  @Get()
-  getHello(): string {
-    return 'Hello';
-  }
+  constructor(private readonly assignmentsService: AssignmentsService) {}
+
   @Post('create')
-  @UseGuards(CommanderGuard)
-  create(@Body() assign: { id: number; userId: number; shiftId: number }) {
-    return this.assignService.createAssignment(assign);
+  @UseGuards(commanderGuard)
+  create(@Body() createAssignmentDto: AssignmentDto) {
+    return this.assignmentsService.create(createAssignmentDto);
   }
+
   @Get('getAll')
-  @UseGuards(soldierGuard)
-  getAll() {
-    return this.assignService.findAll();
+  @UseGuards(AuthGuard)
+  findAll() {
+    return this.assignmentsService.findAll();
   }
-  @Get('getById:id')
-  @UseGuards(soldierGuard)
-  getOne(@Param() id: number) {
-    return this.assignService.findOne(id);
+
+  @Get('getOne:id')
+  @UseGuards(AuthGuard)
+  findOne(@Param('id') id: string) {
+    return this.assignmentsService.findOne(+id);
   }
-  @Put('update')
-  @UseGuards(CommanderGuard)
-  updateUser(
-    @Body()
-    assign: {
-      id: number;
-      userId: number;
-      shiftId: number;
-    },
-  ) {
-    return this.assignService.update(assign);
+
+  @Patch('update:id')
+  @UseGuards(commanderGuard)
+  update(@Param('id') id: number, @Body() updateAssignmentDto: AssignmentDto) {
+    return this.assignmentsService.update(id, updateAssignmentDto);
   }
+
   @Delete('delete:id')
-  @UseGuards(CommanderGuard)
-  deleteUser(@Param() id: number) {
-    return this.assignService.remove(id);
+  @UseGuards(commanderGuard)
+  remove(@Param('id') id: number) {
+    return this.assignmentsService.remove(id);
   }
 }

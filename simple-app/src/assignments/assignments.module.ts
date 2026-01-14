@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { AssignmentsController } from './assignments.controller';
 import { AssignmentsService } from './assignments.service';
+import { AssignmentsController } from './assignments.controller';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { Assignments } from './assignments.model';
+import { Assignments } from './entities/assignment.entity';
 
 @Module({
   imports: [SequelizeModule.forFeature([Assignments])],

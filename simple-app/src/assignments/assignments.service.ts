@@ -1,43 +1,35 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Assignments } from './assignments.model';
+import { AssignmentDto } from './dto/assignment.dto';
+import { Assignments } from './entities/assignment.entity';
 
 @Injectable()
 export class AssignmentsService {
   constructor(
     @InjectModel(Assignments)
-    private readonly assignmentModel: typeof Assignments,
+    private readonly assignModel: typeof Assignments,
   ) {}
+  async create(AssignmentDto: AssignmentDto): Promise<Assignments | null> {
+    return await this.assignModel.create(AssignmentDto as any);
+  }
 
-  async createAssignment(assignment: any): Promise<Assignments | null> {
-    return await this.assignmentModel.create({
-      assignment,
-    });
+  async findAll(): Promise<Assignments[] | null> {
+    return await this.assignModel.findAll();
   }
 
   async findOne(id: number) {
-    const assign = await this.assignmentModel.findOne({
-      where: {
-        id,
-      },
-    });
-    return assign?.dataValues;
+    return await this.assignModel.findByPk(id);
   }
 
-  async findAll(): Promise<Assignments[]> {
-    return await this.assignmentModel.findAll();
+  async update(
+    id: number,
+    AssignmentDto: AssignmentDto,
+  ): Promise<Assignments | undefined> {
+    const assign = await this.assignModel.findByPk(id);
+    return await assign?.update(AssignmentDto as any);
   }
-
-  async update(assignment: any) {
-    const assignmentsToUpdate = await this.findOne(assignment.id);
-    await this.assignmentModel.update(
-      { ...assignment, ...assignmentsToUpdate },
-      { where: { id: assignment.id } },
-    );
-  }
-
   async remove(id: number): Promise<void> {
-    const assignment = await this.findOne(id);
-    return await assignment?.destroy();
+    const assign = await this.assignModel.findByPk(id);
+    return await assign?.destroy();
   }
 }

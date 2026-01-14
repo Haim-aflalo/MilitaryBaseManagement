@@ -1,64 +1,49 @@
 import {
-  Body,
   Controller,
-  Delete,
   Get,
-  Param,
   Post,
-  Put,
+  Body,
+  Patch,
+  Param,
+  Delete,
   UseGuards,
 } from '@nestjs/common';
 import { ShiftsService } from './shifts.service';
-import { soldierGuard } from 'src/auth/auth.soldier.guard';
-import { CommanderGuard } from 'src/auth/auth.commander.guard';
+import { ShiftDto } from './dto/shift.dto';
+import { AuthGuard } from 'src/auth/auth.soldierGuard';
+import { commanderGuard } from 'src/auth/auth.commanderGuard';
 
 @Controller('shifts')
 export class ShiftsController {
-  constructor(private shiftServices: ShiftsService) {}
-  @Get()
-  getHello(): string {
-    return 'Hello';
-  }
+  constructor(private readonly shiftsService: ShiftsService) {}
+
   @Post('create')
-  @UseGuards(CommanderGuard)
-  create(
-    @Body()
-    shift: {
-      id: number;
-      startTime: Date;
-      endTime: Date;
-      location: string;
-    },
-  ) {
-    return this.shiftServices.createShift({ shift });
-  }
-  @Get('getAll')
-  @UseGuards(soldierGuard)
-  getAll() {
-    return this.shiftServices.findAll();
-  }
-  @Get('getById:id')
-  @UseGuards(soldierGuard)
-  getOne(@Param() id: number) {
-    return this.shiftServices.findOne(id);
+  @UseGuards(commanderGuard)
+  create(@Body() createShiftDto: ShiftDto) {
+    return this.shiftsService.create(createShiftDto);
   }
 
-  @Put('update')
-  @UseGuards(CommanderGuard)
-  updateUser(
-    @Body()
-    shift: {
-      id: number;
-      startTime: Date;
-      endTime: Date;
-      location: string;
-    },
-  ) {
-    return this.shiftServices.update(shift);
+  @Get('getAll')
+  @UseGuards(AuthGuard)
+  findAll() {
+    return this.shiftsService.findAll();
   }
-  @Delete('delete:id')
-  @UseGuards(CommanderGuard)
-  deleteUser(@Param() id: number) {
-    return this.shiftServices.remove(id);
+
+  @Get('getById:id')
+  @UseGuards(AuthGuard)
+  findOne(@Param('id') id: string) {
+    return this.shiftsService.findOne(+id);
+  }
+
+  @Patch('update:id')
+  @UseGuards(commanderGuard)
+  update(@Param('id') id: number, @Body() updateShiftDto: ShiftDto) {
+    return this.shiftsService.update(id, updateShiftDto);
+  }
+
+  @Delete('remove:id')
+  @UseGuards(commanderGuard)
+  remove(@Param('id') id: number) {
+    return this.shiftsService.remove(id);
   }
 }
